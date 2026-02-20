@@ -1,0 +1,396 @@
+<div style="position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); font-family:sans-serif; color:#333; overflow:hidden; user-select:none; -webkit-user-select:none;">
+
+  <!-- Ambient background blobs for glassmorphism effect -->
+  <div style="position:absolute; top:-10%; left:-10%; width:50vw; height:50vw; background:radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%); filter:blur(60px); z-index:0;"></div>
+  <div style="position:absolute; bottom:-10%; right:-10%; width:60vw; height:60vw; background:radial-gradient(circle, rgba(255,182,193,0.4) 0%, rgba(255,255,255,0) 70%); filter:blur(60px); z-index:0;"></div>
+
+  <!-- Main Container -->
+  <div id="appContainer" style="position:relative; z-index:1; width:90%; max-width:1000px; height:85vh; display:flex; flex-direction:column; align-content:center; justify-content:center;">
+
+    <!-- Glassmorphism Styles -->
+    <style>
+      /* Allow selection for inputs only */
+      input, textarea { user-select: text !important; -webkit-user-select: text !important; }
+      
+      .glass {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding:20px;
+        display:flex;
+        flex-direction:column;
+        transition: transform 0.2s;
+        width: 100%; 
+        height: 100%; 
+        overflow: hidden; 
+      }
+      .glass:hover { border: 1px solid rgba(255, 255, 255, 0.7); transform: translateY(-1px); }
+    </style>
+
+    <!-- Main Content Area -->
+    <div style="flex:1; width:100%; position:relative; display:flex; overflow:hidden;">
+      <div class="glass">
+        <h2 style="margin-top:0; color:#4a4a4a; font-weight:600;">Image Generator</h2>
+        
+        <div id="imgDisplayCtn" style="flex:1; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.05); border-radius:12px; margin-bottom:15px; overflow:hidden; position:relative; min-height:0;">
+          <div id="placeholderText" style="color:#777; font-style:italic; text-align:center; padding:20px;">
+            Images appear here
+          </div>
+          <img id="resultImg" hidden style="width:100%; height:100%; object-fit:contain; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+          <div id="imgLoadingSpinner" hidden style="position:absolute; display:flex; flex-direction:column; align-items:center; gap:10px; color:#555;">
+            <svg width="40" height="40" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;">
+              <circle cx="25" cy="25" r="20" fill="none" stroke="#6a11cb" stroke-width="4" stroke-dasharray="31.4 31.4" stroke-linecap="round"></circle>
+            </svg>
+            <span>Drawing...</span>
+          </div>
+          <!-- Download action button for generated image -->
+          <button id="downloadImgBtn" hidden onclick="downloadImage()" style="position:absolute; bottom:10px; right:10px; padding:8px 16px; border-radius:20px; border:none; background:rgba(255,255,255,0.9); color:#333; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15); display:flex; align-items:center; gap:6px; transition:opacity 0.2s;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download
+          </button>
+        </div>
+
+        <textarea id="promptInput" rows="2" placeholder="Describe the image you want to generate..." style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.5); background:rgba(255,255,255,0.4); outline:none; color:#333; resize:none; margin-bottom:10px; font-family:inherit;"></textarea>
+        
+        <!-- New Controls Row: Style and Resolution -->
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <select id="styleInput" style="flex:1; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.5); background:rgba(255,255,255,0.4); outline:none; color:#333;">
+            <option value="">No Style</option>
+            <option value="Cyberpunk">Cyberpunk</option>
+            <option value="Anime">Anime (General)</option>
+            <option value="Studio Ghibli">Studio Ghibli</option>
+            <option value="Makoto Shinkai">Makoto Shinkai</option>
+            <option value="Mamoru Hosoda Style">Mamoru Hosoda Style</option>
+            <option value="Masaaki Yuasa Style">Masaaki Yuasa Style</option>
+            <option value="Kunihiko Ikuhara Style">Kunihiko Ikuhara Style</option>
+            <option value="Hiroyuki Imaishi Style">Hiroyuki Imaishi Style</option>
+            <option value="Satoshi Kon">Satoshi Kon</option>
+            <option value="Akira Toriyama">Akira Toriyama</option>
+            <option value="Masamune Shirow Style">Masamune Shirow Style</option>
+            <option value="Rumiko Takahashi Style">Rumiko Takahashi Style</option>
+            <option value="Tite Kubo Style">Tite Kubo Style</option>
+            <option value="Hideaki Sorachi Style">Hideaki Sorachi Style</option>
+            <option value="CLAMP">CLAMP</option>
+            <option value="Kyoto Animation">Kyoto Animation</option>
+            <option value="Ufotable Style">Ufotable Style</option>
+            <option value="MAPPA Style">MAPPA Style</option>
+            <option value="Bones Style">Bones Style</option>
+            <option value="Trigger Style">Trigger Style</option>
+            <option value="A-1 Pictures Style">A-1 Pictures Style</option>
+            <option value="Retro 90s Anime">90s Retro Anime</option>
+            <option value="Retro 80s Anime">80s Retro Anime</option>
+            <option value="Retro 2000s Anime">2000s Retro Anime</option>
+            <option value="Y2K Anime Style">Y2K Anime Style</option>
+            <option value="Shonen Anime">Shonen Anime</option>
+            <option value="Shojo Anime">Shojo Anime</option>
+            <option value="Seinen Anime">Seinen Anime</option>
+            <option value="Magical Girl Anime">Magical Girl Anime</option>
+            <option value="Chibi">Chibi</option>
+            <option value="Mecha">Mecha</option>
+            <option value="Dark Fantasy Anime">Dark Fantasy Anime</option>
+            <option value="Gothic Lolita Anime">Gothic Lolita Anime</option>
+            <option value="Gothic Horror Anime">Gothic Horror Anime</option>
+            <option value="Vaporwave Anime">Vaporwave Anime</option>
+            <option value="Steampunk Anime">Steampunk Anime</option>
+            <option value="Isekai Fantasy Anime">Isekai Fantasy Anime</option>
+            <option value="Xianxia / Cultivation Anime">Xianxia / Cultivation Anime</option>
+            <option value="Manga Style">Manga Style</option>
+            <option value="Anime Screencap">Anime Screencap</option>
+            <option value="Light Novel Illustration">Light Novel Illustration</option>
+            <option value="Visual Novel CG Style">Visual Novel CG Style</option>
+            <option value="JoJo's Bizarre Adventure Style">JoJo's Bizarre Adventure Style</option>
+            <option value="Berserk Style">Berserk Style</option>
+            <option value="Junji Ito Horror Style">Junji Ito Horror Style</option>
+            <option value="Neon Genesis Evangelion Style">Neon Genesis Evangelion Style</option>
+            <option value="Ghost in the Shell Style">Ghost in the Shell Style</option>
+            <option value="Cowboy Bebop Style">Cowboy Bebop Style</option>
+            <option value="FLCL Style">FLCL Style</option>
+            <option value="Naruto Style">Naruto Style</option>
+            <option value="One Piece Style">One Piece Style</option>
+            <option value="Demon Slayer Style">Demon Slayer Style</option>
+            <option value="My Hero Academia Style">My Hero Academia Style</option>
+            <option value="Attack on Titan Style">Attack on Titan Style</option>
+            <option value="Mob Psycho 100 Style">Mob Psycho 100 Style</option>
+            <option value="Spy x Family Style">Spy x Family Style</option>
+            <option value="Type-Moon Style">Type-Moon Style</option>
+            <option value="Daisuke Ishiwatari Style">Daisuke Ishiwatari Style</option>
+            <option value="Yusuke Murata Style">Yusuke Murata Style</option>
+            <option value="Tatsuki Style">Tatsuki Style</option>
+            <option value="Shaft Style">Shaft Style</option>
+            <option value="Science SARU Style">Science SARU Style</option>
+            <option value="Madhouse Style">Madhouse Style</option>
+            <option value="Sunrise Style">Sunrise Style</option>
+            <option value="70s Retro Anime">70s Retro Anime</option>
+            <option value="Tezuka Osamu Style">Tezuka Osamu Style</option>
+            <option value="Sports Anime">Sports Anime</option>
+            <option value="Idol Anime">Idol Anime</option>
+            <option value="Ukiyo-e Japanese Woodblock">Ukiyo-e Japanese Woodblock</option>
+            <option value="Sumi-e Ink Wash">Sumi-e Ink Wash</option>
+            <option value="Gouache Painting">Gouache Painting</option>
+            <option value="Vector Art">Vector Art</option>
+            <option value="Superflat Art">Superflat Art</option>
+            <option value="Cel Shaded">Cel Shaded</option>
+            <option value="Lineless Art">Lineless Art</option>
+            <option value="Low Poly 3D Anime">Low Poly 3D Anime</option>
+            <option value="Voxel Art Anime">Voxel Art Anime</option>
+            <option value="Glitch Art Anime">Glitch Art Anime</option>
+            <option value="VHS Tape Effect Anime">VHS Tape Effect Anime</option>
+            <option value="Film Noir Anime">Film Noir Anime</option>
+            <option value="Paper Cutout Style">Paper Cutout Style</option>
+            <option value="Silkscreen Art">Silkscreen Art</option>
+            <option value="Western Anime Style">Western Anime Style</option>
+            <option value="Graffiti Art Anime Style">Graffiti Art Anime Style</option>
+            <option value="Survival Game Anime">Survival Game Anime</option>
+            <option value="Post-Apocalyptic Anime">Post-Apocalyptic Anime</option>
+            <option value="Realistic">Realistic</option>
+            <option value="Oil Painting">Oil Painting</option>
+            <option value="Watercolor">Watercolor</option>
+            <option value="Pixel Art">Pixel Art</option>
+            <option value="3D Render">3D Render</option>
+            <option value="Sketch">Sketch</option>
+          </select>
+          <select id="resolutionInput" style="flex:1; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.5); background:rgba(255,255,255,0.4); outline:none; color:#333;">
+            <option value="768x768">Square (768x768)</option>
+            <option value="512x512">Square (512x512)</option>
+            <option value="512x768">Portrait (512x768)</option>
+            <option value="768x512">Landscape (768x512)</option>
+          </select>
+        </div>
+
+        <button id="generateBtn" style="width:100%; padding:12px; border-radius:12px; border:none; background:linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color:white; font-weight:bold; font-size:1rem; cursor:pointer; box-shadow:0 4px 10px rgba(106, 17, 203, 0.3); transition:transform 0.1s, opacity 0.2s;">
+          Generate Image
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // --- Image Logic ---
+
+    // Detailed enhancements for each style to make the prompt "very complete and very sharp"
+    let styleEnhancements = {
+      "Cyberpunk": ", cyberpunk aesthetic, neon noir lighting, futuristic dystopian city, high tech low life, holographic details, vibrant colors, hyper-detailed, 8k, cinematic composition, sharp focus",
+      "Studio Ghibli": ", Studio Ghibli style, lush hand-drawn animation, whimsical atmosphere, emotional storytelling, vibrant saturated colors, detailed fantasy landscape, Hayao Miyazaki aesthetic, peaceful, masterpiece",
+      "Makoto Shinkai": ", Makoto Shinkai style, stunningly beautiful sky, lens flare, atmospheric clouds, vibrant city lights, romantic mood, ultra realistic background art, emotional, highly detailed, 4k",
+      "Mamoru Hosoda Style": ", Mamoru Hosoda style, distinct soft character designs, warm lighting, fluid animation, emotional storytelling, vibrant colors, slice of life atmosphere",
+      "Masaaki Yuasa Style": ", Masaaki Yuasa style, surreal psychedelic imagery, loose sketchy lines, rubbery animation, bold colors, mind-bending perspective, artistic indie",
+      "Kunihiko Ikuhara Style": ", Kunihiko Ikuhara style, heavy visual symbolism, surreal atmosphere, theatrical staging, intricate patterns, distinct character poses, artistic",
+      "Hiroyuki Imaishi Style": ", Hiroyuki Imaishi style, Gainax/Trigger fusion, thick stylized outlines, intense dynamic action, exaggerated perspective, vibrant energy, explosive",
+      "Satoshi Kon": ", Satoshi Kon style, psychological thriller, surreal atmosphere, distinct cinematic angles, realistic character proportions, dramatic lighting, mind-bending visuals, detailed",
+      "Akira Toriyama": ", Akira Toriyama style, Dragon Ball aesthetic, round muscular anatomy, dynamic action poses, vibrant colors, expressive line art, classic shonen manga look",
+      "Masamune Shirow Style": ", Masamune Shirow style, highly detailed mechanical techwear, intricate line art, tactical military gear, cyberpunk manga aesthetic, dense detail",
+      "Rumiko Takahashi Style": ", Rumiko Takahashi style, classic shonen aesthetic, expressive comedic faces, flowing hair, detailed traditional clothing, fantasy adventure",
+      "Tite Kubo Style": ", Tite Kubo style, Bleach manga aesthetic, high fashion clothing, cool stylish poses, clean minimalist backgrounds, distinct line art",
+      "Hideaki Sorachi Style": ", Hideaki Sorachi style, Gintama aesthetic, exaggerated comedic expressions, parody elements, distinctive character art, satirical",
+      "CLAMP": ", CLAMP style, elongated limbs, elegant flowy hair, delicate features, intricate outfits, gothic fashion aesthetic, emotional shoujo style",
+      "Kyoto Animation": ", Kyoto Animation style, soft lighting, vibrant and detailed backgrounds, slice of life atmosphere, fluid animation aesthetic, high quality shading, kawaii",
+      "Ufotable Style": ", Ufotable style, cinematic digital effects, dynamic camera angles, dark atmospheric lighting, high contrast, detailed particle effects, intense action",
+      "MAPPA Style": ", MAPPA style, gritty realism, modern aesthetic, dynamic action sequences, high detail, intense shading, distinct character designs",
+      "Bones Style": ", Bones style, fluid action animation, energetic composition, vibrant colors, mechanical detail, dynamic perspective, high budget anime look",
+      "Trigger Style": ", Trigger style, Gainax influence, exaggerated motion, rough sketchy lines, vibrant explosions, energetic, chaotic creativity, unique art direction",
+      "A-1 Pictures Style": ", A-1 Pictures style, clean character art, vibrant pastel colors, detailed backgrounds, emotional lighting, modern anime aesthetic",
+      "Retro 90s Anime": ", 90s retro anime style, vintage cel animation, grainy texture, muted colors with high contrast, hand drawn feel, classic ova aesthetic",
+      "Retro 80s Anime": ", 80s retro anime style, bold outlines, painted backgrounds, vivid sunset colors, mechanical detail, classic sci-fi aesthetic, nostalgic",
+      "Retro 2000s Anime": ", 2000s retro anime style, digital coloring early era, shiny hair highlights, desaturated tones, classic mid-2000s aesthetic",
+      "Y2K Anime Style": ", Y2K anime style, late 90s early 2000s futuristic aesthetic, metallic textures, tech wear, bright primary colors, digimon vibes",
+      "Shonen Anime": ", Shonen anime style, dynamic action, intense battles, energetic aura effects, determined expressions, manga panel aesthetic, high impact",
+      "Shojo Anime": ", Shojo anime style, soft sparkly eyes, flowing hair, pastel flowers, romantic atmosphere, delicate line work, emotional beauty",
+      "Seinen Anime": ", Seinen anime style, mature themes, realistic shading, gritty texture, detailed atmospheric backgrounds, cinematic composition, darker tones",
+      "Magical Girl Anime": ", Magical Girl anime style, sparkles, frilly costumes, pastel colors, transformation aesthetic, cute and powerful, vibrant, decorative",
+      "Chibi": ", Chibi style, super deformed, cute proportions, large eyes, small bodies, soft shading, kawaii, adorable",
+      "Mecha": ", Mecha style, giant robots, detailed mechanical parts, industrial design, sci-fi military aesthetic, chrome metal, heavy machinery",
+      "Dark Fantasy Anime": ", Dark Fantasy anime style, grim atmosphere, gothic architecture, dark shadows, monster designs, intense contrast, brooding",
+      "Gothic Lolita Anime": ", Gothic Lolita anime style, victorian fashion, lace, ribbons, black and red palette, elegant frills, doll-like features",
+      "Gothic Horror Anime": ", Gothic Horror anime style, creepy atmosphere, dark silhouettes, blood red accents, unsettling vibe, detailed horror elements",
+      "Vaporwave Anime": ", Vaporwave anime style, 80s aesthetic, neon pinks and purples, glitch art, retro computer graphics, surreal dreamy vibe",
+      "Steampunk Anime": ", Steampunk anime style, brass gears, steam engines, victorian clothing, industrial machinery, sepia tones, goggles",
+      "Isekai Fantasy Anime": ", Isekai Fantasy anime style, rpg game interface elements, medieval fantasy setting, vibrant magic effects, diverse character races",
+      "Xianxia / Cultivation Anime": ", Xianxia cultivation anime style, traditional chinese robes, flowing martial arts, ethereal qi effects, mountains and clouds, ancient aesthetic",
+      "Manga Style": ", Manga style, black and white, screentones, speed lines, inked look, comic page layout, high contrast",
+      "Anime Screencap": ", Anime screencap style, television subtitles, 720p resolution, slight motion blur, tv interface, authentic look",
+      "Light Novel Illustration": ", Light Novel illustration style, watercolor texture, detailed characters, soft focus background, romantic lighting, book cover art",
+      "Visual Novel CG Style": ", Visual Novel CG style, detailed sprites, static background, emotional portrait, high detail character art, dating sim aesthetic",
+      "JoJo's Bizarre Adventure Style": ", JoJo's Bizarre Adventure style, muscular physique, stylish poses, vivid colors, hatching shading, iconic fashion, unique aesthetic",
+      "Berserk Style": ", Berserk style, dark gritty, heavy ink cross-hatching, medieval horror, intense detail, dynamic action, kentaro miura aesthetic",
+      "Junji Ito Horror Style": ", Junji Ito horror style, body horror, spirals, creepy obsession, detailed black and white ink, unsettling atmosphere, grotesque",
+      "Neon Genesis Evangelion Style": ", Neon Genesis Evangelion style, cel shading, retro 90s, biblical imagery, mecha interfaces, psychological depth, distinct color palette",
+      "Ghost in the Shell Style": ", Ghost in the Shell style, cybernetic enhancements, philosophical atmosphere, high tech cityscapes, cool blue tones, realistic anime",
+      "Cowboy Bebop Style": ", Cowboy Bebop style, noir atmosphere, jazz age aesthetic, gritty realism, film grain, melancholic mood, detailed characters",
+      "FLCL Style": ", FLCL style, chaotic energy, manga effects mixed with anime, flat colors, surreal imagery, energetic, Gainax style",
+      "Naruto Style": ", Naruto style, ninja aesthetic, headbands, dynamic action, orange and blue palette, distinct facial markings, shonen jump look",
+      "One Piece Style": ", One Piece style, exaggerated anatomy, fluid motion, vibrant world, expressive faces, oda art style, adventurous",
+      "Demon Slayer Style": ", Demon Slayer style, ufotable digital effects, water breathing patterns, taisho era setting, beautiful clothing, intense eyes",
+      "My Hero Academia Style": ", My Hero Academia style, hero costumes, comic book sound effects, vibrant action, distinct character designs, modern shonen",
+      "Attack on Titan Style": ", Attack on Titan style, gritty realism, sketchy lines, monochromatic tones with red accents, intense action, despair atmosphere",
+      "Mob Psycho 100 Style": ", Mob Psycho 100 style, one art style, rough brush strokes, psychedelic explosions, quirky character designs, expressive animation",
+      "Spy x Family Style": ", Spy x Family style, clean bright lines, cute aesthetic, warm colors, blend of action and slice of life, polished look",
+      "Type-Moon Style": ", Type-Moon style, Fate Stay Night aesthetic, detailed intricate armor, distinctive sharp eyes, magical particle effects, visual novel vibe",
+      "Daisuke Ishiwatari Style": ", Daisuke Ishiwatari style, Guilty Gear aesthetic, heavy metal influence, highly detailed shading, cool rockstar poses, vibrant colors",
+      "Yusuke Murata Style": ", Yusuke Murata style, One Punch Man manga, hyper detailed draftsmanship, incredible shading, dynamic action poses, high contrast",
+      "Tatsuki Style": ", Tatsuki style, Kemono Friends aesthetic, low poly 3D models, distinct lighting, cute creatures, indie game vibe",
+      "Shaft Style": ", Shaft animation studio style, abstract geometric backgrounds, distinctive head tilts, stylized lighting, intricate patterns, monogatari series aesthetic, artistic",
+      "Science SARU Style": ", Science SARU style, rough pencil textures, fluid rotoscope animation, vibrant bold colors, unique character expressions, energetic",
+      "Madhouse Style": ", Madhouse animation studio style, detailed character designs, mature themes, realistic shading, high quality production, dramatic lighting",
+      "Sunrise Style": ", Sunrise studio style, mecha aesthetic, gritty realism, detailed military hardware, classic sci-fi action, dynamic compositions",
+      "70s Retro Anime": ", 70s retro anime style, vintage wobbly animation, painted backgrounds, muted earth tones, distinct retro feel, classic anime",
+      "Tezuka Osamu Style": ", Osamu Tezuka style, classic 60s anime aesthetic, rounded character shapes, simple thick lines, astro boy look, nostalgic, hand drawn",
+      "Sports Anime": ", Sports anime style, dynamic motion blur, intense action lines, speed effects, sweat drops, determined expressions, high energy",
+      "Idol Anime": ", Idol anime style, sparkly stage lights, frilly costumes, vibrant performances, cute and energetic, pop star aesthetic",
+      "Ukiyo-e Japanese Woodblock": ", Ukiyo-e Japanese woodblock print style, flat colors, textured paper, sumi ink outlines, traditional japanese art, waves and mountains",
+      "Sumi-e Ink Wash": ", Sumi-e ink wash painting style, monochrome black ink, expressive brush strokes, minimalist composition, zen atmosphere, traditional art",
+      "Gouache Painting": ", Gouache painting style, matte finish, opaque colors, visible brush texture, artistic illustration, rich color palette",
+      "Vector Art": ", Vector art style, clean crisp lines, flat colors, geometric shapes, smooth gradients, modern graphic design aesthetic",
+      "Superflat Art": ", Superflat art style, Takashi Murakami, flat 2D planes, pop culture motifs, cute but eerie, limited depth, vibrant",
+      "Cel Shaded": ", Cel shaded anime style, hard shadows, distinct outlines, vibrant colors, typical modern anime aesthetic, clean look",
+      "Lineless Art": ", Lineless anime art style, soft gradients, no outlines, high detail, modern digital painting, dreamy atmosphere",
+      "Low Poly 3D Anime": ", low poly 3D anime style, blocky geometric shapes, vibrant cel shading, chibi proportions, video game asset look",
+      "Voxel Art Anime": ", voxel art style, 3D pixel blocks, isometric view, charming aesthetic, lego-like, retro tech",
+      "Glitch Art Anime": ", Glitch art style, corrupted pixel effects, chromatic aberration, distortion, digital artifacts, cyberpunk aesthetic, surreal",
+      "VHS Tape Effect Anime": ", VHS tape effect, scanlines, tracking noise, analog grain, slight blur, retro 90s home video look, nostalgic",
+      "Film Noir Anime": ", Film noir anime style, high contrast black and white, dramatic shadows, mystery atmosphere, grayscale, cinematic lighting",
+      "Paper Cutout Style": ", paper cutout style, layered paper textures, visible depth shadows, craft aesthetic, stop motion look, artistic",
+      "Silkscreen Art": ", silkscreen art style, retro poster print, limited color palette, halftone dot patterns, textured paper, vintage graphic design",
+      "Western Anime Style": ", Western anime style, Avatar The Last Airbender, distinct angular shapes, expressive fluid animation, american anime fusion",
+      "Graffiti Art Anime Style": ", graffiti art anime style, urban spray paint aesthetic, vibrant colors, drip effects, street art tags, edgy",
+      "Survival Game Anime": ", Survival game anime style, tense atmosphere, dynamic action poses, game ui elements, dramatic perspective, intense",
+      "Post-Apocalyptic Anime": ", Post-apocalyptic anime style, ruined cityscapes, overgrown nature, rusty machinery, dust and debris, atmospheric, desolate",
+      "Realistic": ", photorealistic, 8k resolution, highly detailed, natural lighting, sharp focus, dslr photo, hyperrealistic",
+      "Oil Painting": ", oil painting style, visible brushstrokes, impasto texture, rich colors, classic art museum aesthetic, dramatic lighting, masterpiece",
+      "Watercolor": ", watercolor painting style, soft edges, paper texture, pastel colors, bleeding ink, artistic, fluid, delicate",
+      "Pixel Art": ", pixel art style, 16-bit aesthetic, limited color palette, crisp pixels, retro gaming, nostalgic, dot matrix",
+      "3D Render": ", 3d render style, octane render, unreal engine 5, ray tracing, global illumination, volumetric lighting, 4k, cg society",
+      "Sketch": ", pencil sketch style, graphite texture, rough lines, shading, paper grain, hand drawn, artistic concept art"
+    };
+
+    // Charming placeholder hints for the selected style
+    let stylePlaceholderHints = {
+      "Cyberpunk": "Describe the image... (e.g. A futuristic hacker in a neon-lit rainy alleyway)",
+      "Studio Ghibli": "Describe the image... (e.g. A flying machine above fluffy white clouds)",
+      "Realistic": "Describe the image... (e.g. A close-up of a human eye, photorealistic)",
+      "Oil Painting": "Describe the image... (e.g. A serene landscape with a cabin in the woods)",
+      "Anime": "Describe the image... (e.g. A girl with pink hair sitting by a window)",
+      "Makoto Shinkai": "Describe the image... (e.g. A boy looking at a comet in the night sky)",
+      "Mamoru Hosoda Style": "Describe the image... (e.g. A boy running through a field of yellow flowers)",
+      "Masaaki Yuasa Style": "Describe the image... (e.g. A weird creature transforming into a car)",
+      "Kunihiko Ikuhara Style": "Describe the image... (e.g. A girl transforming with floating roses in the background)",
+      "Hiroyuki Imaishi Style": "Describe the image... (e.g. A mecha exploding with dynamic energy streaks)",
+      "Akira Toriyama": "Describe the image... (e.g. A martial artist charging up energy)",
+      "Masamune Shirow Style": "Describe the image... (e.g. A cyborg mercenary with intricate armor)",
+      "Rumiko Takahashi Style": "Describe the image... (e.g. A half-demon girl with a giant boomerang)",
+      "Tite Kubo Style": "Describe the image... (e.g. A soul reaper in a black robe holding a sword)",
+      "Hideaki Sorachi Style": "Describe the image... (e.g. A samurai with dead fish eyes reading a manga)",
+      "Pixel Art": "Describe the image... (e.g. A brave knight fighting a slime monster)",
+      "3D Render": "Describe the image... (e.g. A shiny sports car on a reflective floor)",
+      "Watercolor": "Describe the image... (e.g. A field of flowers with soft bleeding colors)",
+      "Mecha": "Describe the image... (e.g. A giant robot standing in a city)",
+      "Chibi": "Describe the image... (e.g. A cute chibi character holding a star)",
+      "Shaft Style": "Describe the image... (e.g. A girl with a sharp stare tilting her head in a geometric room)",
+      "Science SARU Style": "Describe the image... (e.g. A character running with rough sketchy lines and vibrant energy)",
+      "Madhouse Style": "Describe the image... (e.g. A detective standing in the rain under a streetlamp)",
+      "Sunrise Style": "Describe the image... (e.g. A pilot inside a giant mecha cockpit looking at a screen)",
+      "70s Retro Anime": "Describe the image... (e.g. A transforming robot in a painted vintage city)",
+      "Tezuka Osamu Style": "Describe the image... (e.g. A classic robot hero with rounded limbs and a simple smile)",
+      "Sports Anime": "Describe the image... (e.g. A basketball player mid-air for a slam dunk)",
+      "Idol Anime": "Describe the image... (e.g. A pop singer performing on a glittery stage)",
+      "Ukiyo-e Japanese Woodblock": "Describe the image... (e.g. A samurai standing by a wave in the style of Hokusai)",
+      "Sumi-e Ink Wash": "Describe the image... (e.g. A bamboo forest painted with black ink brush strokes)",
+      "Gouache Painting": "Describe the image... (e.g. A portrait of a knight with matte opaque colors)",
+      "Vector Art": "Describe the image... (e.g. A clean flat design of a futuristic city)",
+      "Superflat Art": "Describe the image... (e.g. A flat graphic portrait with pop art flowers)",
+      "Cel Shaded": "Describe the image... (e.g. A modern anime character with hard outlines and shadows)",
+      "Lineless Art": "Describe the image... (e.g. A soft dreamy landscape without any black outlines)",
+      "Low Poly 3D Anime": "Describe the image... (e.g. A chibi character standing in a blocky town)",
+      "Voxel Art Anime": "Describe the image... (e.g. A castle made of tiny 3D cubes)",
+      "Glitch Art Anime": "Describe the image... (e.g. A girl with digital distortion and corrupted pixels)",
+      "VHS Tape Effect Anime": "Describe the image... (e.g. A quiet scene with scanlines and analog grain)",
+      "Film Noir Anime": "Describe the image... (e.g. A mysterious figure in a dark alley with high contrast shadows)",
+      "Paper Cutout Style": "Describe the image... (e.g. A layered landscape made of colored paper)",
+      "Silkscreen Art": "Describe the image... (e.g. A retro anime poster with halftone dots)",
+      "Western Anime Style": "Describe the image... (e.g. A group of friends on an adventure in a stylized world)",
+      "Graffiti Art Anime Style": "Describe the image... (e.g. A character painted on a brick wall with spray paint)",
+      "Survival Game Anime": "Describe the image... (e.g. A player holding a weapon in a tense forest arena)",
+      "Post-Apocalyptic Anime": "Describe the image... (e.g. A traveler walking through a ruined city overgrown with plants)",
+      "Type-Moon Style": "Describe the image... (e.g. A knight in blue armor holding a magical sword)",
+      "Daisuke Ishiwatari Style": "Describe the image... (e.g. a rockstar character playing guitar with fire)",
+      "Yusuke Murata Style": "Describe the image... (e.g. A hero punching a monster with hyper-detailed impact effects)",
+      "Tatsuki Style": "Describe the image... (e.g. A cute animal friend standing in a 3D park)"
+    };
+    let defaultPlaceholder = "Describe the image you want to generate...";
+
+    // Update placeholder when style changes
+    styleInput.onchange = function() {
+      promptInput.placeholder = stylePlaceholderHints[this.value] || defaultPlaceholder;
+    };
+
+    async function generateImage() {
+      let prompt = promptInput.value.trim();
+      if(!prompt) return;
+
+      let style = styleInput.value;
+      let resolution = resolutionInput.value;
+
+      // Construct prompt with detailed style enhancement
+      let fullPrompt = prompt;
+      if (style) {
+        // Use the detailed enhancement mapping for high quality results
+        let enhancement = styleEnhancements[style] || `, ${style} style, highly detailed, sharp focus, 8k, masterpiece`;
+        fullPrompt += enhancement;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Generating...";
+      generateBtn.style.opacity = "0.7";
+      
+      placeholderText.hidden = true;
+      resultImg.hidden = true;
+      imgLoadingSpinner.hidden = false;
+      downloadImgBtn.hidden = false; 
+
+      try {
+        // Pass resolution to generateImage
+        let dataUrl = await root.generateImage(fullPrompt, {resolution: resolution});
+        
+        resultImg.src = dataUrl;
+        resultImg.onload = () => {
+          imgLoadingSpinner.hidden = true;
+          resultImg.hidden = false;
+          downloadImgBtn.hidden = false; 
+        };
+      } catch(e) {
+        placeholderText.hidden = false;
+        placeholderText.textContent = "Error generating image. Try again.";
+        imgLoadingSpinner.hidden = true;
+        console.error(e);
+      }
+
+      generateBtn.disabled = false;
+      generateBtn.textContent = "Generate Image";
+      generateBtn.style.opacity = "1";
+    }
+
+    generateBtn.onclick = generateImage;
+
+    // Download image action feature
+    window.downloadImage = function() {
+      let link = document.createElement("a");
+      link.href = resultImg.src;
+      link.download = "generated-image.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    // Animation for spinner
+    let styleSheet = document.createElement("style");
+    styleSheet.innerText = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+    document.head.appendChild(styleSheet);
+
+  </script>
+</div>
